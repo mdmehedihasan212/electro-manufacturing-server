@@ -25,6 +25,7 @@ async function run() {
         const toolsCollection = client.db("toolsCollection").collection("tools");
         const orderCollection = client.db("toolsCollection").collection("orders");
         const reviewCollection = client.db("toolsCollection").collection("reviews");
+        const updateCollection = client.db("toolsCollection").collection("updateInfo");
 
         app.get('/tools', async (req, res) => {
             const query = {};
@@ -38,6 +39,12 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const tool = await toolsCollection.findOne(query);
             res.send(tool);
+        })
+
+        app.post('/update', async (req, res) => {
+            const orders = req.body;
+            const updateInfo = await updateCollection.insertOne(orders);
+            res.send(updateInfo)
         })
 
         app.post('/orders', async (req, res) => {
