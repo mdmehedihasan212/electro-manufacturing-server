@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // middleware
 app.use(cors());
@@ -23,6 +24,7 @@ async function run() {
         await client.connect();
         const toolsCollection = client.db("toolsCollection").collection("tools");
         const orderCollection = client.db("toolsCollection").collection("orders");
+        const reviewCollection = client.db("toolsCollection").collection("reviews");
 
         app.get('/tools', async (req, res) => {
             const query = {};
@@ -43,6 +45,25 @@ async function run() {
             const purchasesOrder = await orderCollection.insertOne(orders);
             res.send(purchasesOrder)
         })
+
+        app.post('/review', async (req, res) => {
+            const review = req.body;
+            const userReview = await reviewCollection.insertOne(review);
+            res.send(userReview)
+        })
+
+        // app.post("/create-payment-intent", async (req, res) => {
+        //     const { price } = req.body;
+        //     console.log({ price });
+        //     const amount = price * 100;
+        //     const paymentIntent = await stripe.paymentIntents.create({
+        //         amount: amount,
+        //         currency: "usd",
+        //         payment_method_types: ['card']
+        //     });
+
+        //     res.send({ clientSecret: paymentIntent.client_secret });
+        // });
 
         app.get('/orders', async (req, res) => {
             const email = req.query.email;
@@ -65,7 +86,6 @@ async function run() {
             const deleteItem = await orderCollection.deleteOne(filter);
             res.send(deleteItem)
         })
-
 
 
     } finally {
