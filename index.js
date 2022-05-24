@@ -52,6 +52,12 @@ async function run() {
             res.send(userReview)
         })
 
+        app.get('/review', async (req, res) => {
+            const query = {};
+            const cursor = reviewCollection.find(query)
+            const review = await cursor.toArray();
+            res.send(review);
+        })
         // app.post("/create-payment-intent", async (req, res) => {
         //     const { price } = req.body;
         //     console.log({ price });
