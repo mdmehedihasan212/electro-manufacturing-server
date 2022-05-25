@@ -26,6 +26,7 @@ async function run() {
         const orderCollection = client.db("toolsCollection").collection("orders");
         const reviewCollection = client.db("toolsCollection").collection("reviews");
         const updateCollection = client.db("toolsCollection").collection("updateInfo");
+        const userCollection = client.db("toolsCollection").collection("users");
 
         app.get('/tools', async (req, res) => {
             const query = {};
@@ -59,24 +60,36 @@ async function run() {
             res.send(userReview)
         })
 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options)
+            res.send(result);
+        })
+
         app.get('/review', async (req, res) => {
             const query = {};
             const cursor = reviewCollection.find(query)
             const review = await cursor.toArray();
             res.send(review);
         })
-        // app.post("/create-payment-intent", async (req, res) => {
-        //     const { price } = req.body;
-        //     console.log({ price });
-        //     const amount = parseFloat(price * 100);
-        //     const paymentIntent = await stripe.paymentIntents.create({
-        //         amount: amount,
-        //         currency: "usd",
-        //         payment_method_types: ['card']
-        //     });
 
-        //     res.send({ clientSecret: paymentIntent.client_secret });
-        // });
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ['card']
+            });
+
+            res.send({ clientSecret: paymentIntent.client_secret });
+        });
 
         app.get('/orders', async (req, res) => {
             const email = req.query.email;
