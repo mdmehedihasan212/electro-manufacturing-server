@@ -35,6 +35,13 @@ async function run() {
             res.send(tools);
         })
 
+        app.delete('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const deleteProduct = await toolsCollection.deleteOne(filter);
+            res.send(deleteProduct)
+        })
+
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -65,7 +72,6 @@ async function run() {
             const addProduct = await toolsCollection.insertOne(product);
             res.send(addProduct)
         })
-
 
         app.put('/user/admin/:email', async (req, res) => {
             const email = req.params.email;
