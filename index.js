@@ -60,6 +60,13 @@ async function run() {
             res.send(userReview)
         })
 
+        app.post('/add-product', async (req, res) => {
+            const product = req.body;
+            const addProduct = await toolsCollection.insertOne(product);
+            res.send(addProduct)
+        })
+
+
         app.put('/user/admin/:email', async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -87,6 +94,13 @@ async function run() {
             const query = {};
             const users = await userCollection.find(query).toArray();
             res.send(users);
+        })
+
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin });
         })
 
         app.get('/review', async (req, res) => {
