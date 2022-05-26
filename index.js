@@ -16,8 +16,8 @@ app.get('/', (req, res) => {
 })
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.kh827.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
     try {
@@ -69,7 +69,14 @@ async function run() {
                 $set: user
             };
             const result = await userCollection.updateOne(filter, updateDoc, options)
-            res.send(result);
+            const token = jwt.sign({ email: email }, process.env.JWT_SECRET_TOKEN, { expiresIn: '1d' });
+            res.send({ result, token });
+        })
+
+        app.get('/user', async (req, res) => {
+            const query = {};
+            const users = await userCollection.find(query).toArray();
+            res.send(users);
         })
 
         app.get('/review', async (req, res) => {
@@ -79,23 +86,10 @@ async function run() {
             res.send(review);
         })
 
-        app.post("/create-payment-intent", async (req, res) => {
-            const { price } = req.body;
-            const amount = price * 100;
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount,
-                currency: "usd",
-                payment_method_types: ['card']
-            });
-
-            res.send({ clientSecret: paymentIntent.client_secret });
-        });
-
         app.get('/orders', async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
-            const cursor = orderCollection.find(query);
-            const queryOrders = await cursor.toArray();
+            const queryOrders = await orderCollection.find(query).toArray();
             res.send(queryOrders)
         })
 
