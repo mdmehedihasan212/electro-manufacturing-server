@@ -35,18 +35,18 @@ async function run() {
             res.send(tools);
         })
 
-        app.delete('/tools/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) }
-            const deleteProduct = await toolsCollection.deleteOne(filter);
-            res.send(deleteProduct)
-        })
-
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const tool = await toolsCollection.findOne(query);
             res.send(tool);
+        })
+
+        app.delete('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const deleteProduct = await toolsCollection.deleteOne(filter);
+            res.send(deleteProduct)
         })
 
         app.post('/update', async (req, res) => {
@@ -114,6 +114,12 @@ async function run() {
             const cursor = reviewCollection.find(query)
             const review = await cursor.toArray();
             res.send(review);
+        })
+
+        app.get('/orders', async (req, res) => {
+            const query = {}
+            const orders = await orderCollection.find(query).toArray();
+            res.send(orders)
         })
 
         app.get('/orders', async (req, res) => {
