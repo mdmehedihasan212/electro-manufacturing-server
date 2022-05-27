@@ -144,6 +144,13 @@ async function run() {
             res.send(deleteItem)
         })
 
+        app.delete('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const result = await userCollection.deleteOne(filter)
+            res.send(result);
+        })
+
 
     } finally {
         //   await client.close();
