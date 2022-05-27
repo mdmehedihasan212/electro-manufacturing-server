@@ -126,7 +126,7 @@ async function run() {
         app.get('/orders', async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
-            const queryOrders = await orderCollection.find(query).toArray();
+            const queryOrders = await orderCollection.findOne(query).toArray();
             res.send(queryOrders)
         })
 
@@ -150,7 +150,6 @@ async function run() {
             const result = await userCollection.deleteOne(filter)
             res.send(result);
         })
-
 
     } finally {
         //   await client.close();
