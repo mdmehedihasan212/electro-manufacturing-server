@@ -1,11 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const app = express();
 const port = process.env.PORT || 5000;
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // middleware
 app.use(cors());
@@ -71,7 +72,7 @@ async function run() {
             const product = req.body;
             const addProduct = await toolsCollection.insertOne(product);
             res.send(addProduct)
-        })
+        });
 
         app.put('/user/admin/:email', async (req, res) => {
             const email = req.params.email;
