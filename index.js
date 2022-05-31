@@ -38,6 +38,8 @@ async function run() {
 
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
+            const authHeader = req.headers.authorization;
+            console.log(authHeader);
             const query = { _id: ObjectId(id) };
             const tool = await toolsCollection.findOne(query);
             res.send(tool);
@@ -72,6 +74,21 @@ async function run() {
             const product = req.body;
             const addProduct = await toolsCollection.insertOne(product);
             res.send(addProduct)
+        });
+
+        app.post("/create-payment-intent", async (req, res) => {
+            const price = req.body.price;
+            const amount = price * 100;
+            // Create a PaymentIntent with the order amount and currency
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ['card']
+            });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
         });
 
         app.put('/user/admin/:email', async (req, res) => {
