@@ -28,6 +28,7 @@ async function run() {
         const reviewCollection = client.db("toolsCollection").collection("reviews");
         const updateCollection = client.db("toolsCollection").collection("updateInfo");
         const userCollection = client.db("toolsCollection").collection("users");
+        const paymentCollection = client.db("toolsCollection").collection("payments");
 
         app.get('/tools', async (req, res) => {
             const query = {};
@@ -112,6 +113,21 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc, options)
             const token = jwt.sign({ email: email }, process.env.JWT_SECRET_TOKEN, { expiresIn: '1d' });
             res.send({ result, token });
+        })
+
+        app.patch('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.id
+                }
+            }
+            const updatePayment = await orderCollection.updateOne(filter, updateDoc)
+            const result = await paymentCollection.insertOne(payment)
+            res.send(updateDoc)
         })
 
         app.get('/user', async (req, res) => {
