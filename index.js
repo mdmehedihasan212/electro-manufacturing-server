@@ -20,6 +20,21 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'Unauthorized access' })
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.JWT_SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    });
+}
+
 async function run() {
     try {
         await client.connect();
@@ -39,8 +54,6 @@ async function run() {
 
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
-            const authHeader = req.headers.authorization;
-            console.log(authHeader);
             const query = { _id: ObjectId(id) };
             const tool = await toolsCollection.findOne(query);
             res.send(tool);
@@ -130,13 +143,19 @@ async function run() {
             res.send(updateDoc)
         })
 
-        app.get('/user', async (req, res) => {
+        app.get('/payment', verifyToken, async (req, res) => {
+            const query = {};
+            const payments = await paymentCollection.find(query).toArray();
+            res.send(payments);
+        })
+
+        app.get('/user', verifyToken, async (req, res) => {
             const query = {};
             const users = await userCollection.find(query).toArray();
             res.send(users);
         })
 
-        app.get('/admin/:email', async (req, res) => {
+        app.get('/admin/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email });
             const isAdmin = user.role === 'admin';
@@ -156,7 +175,7 @@ async function run() {
             res.send(orders)
         })
 
-        app.get('/orders', async (req, res) => {
+        app.get('/order', verifyToken, async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
             const queryOrders = await orderCollection.find(query).toArray();
